@@ -45,6 +45,9 @@ def log_error(e):
 
 
 if __name__ == '__main__':
+    # create droid object
+    droid = androidhelper.Android()
+
     # get
     raw_html = simple_get('https://reserve.dlt.go.th/reserve/s.php?confirm=1')
     # parse
@@ -56,8 +59,23 @@ if __name__ == '__main__':
         if 'รถเก๋ง' in cartype:
             print(cartype,  plateset)
             break
+
     
-    # notify on notification panel
-    droid = androidhelper.Android()
-    droid.notify(cartype, plateset)
+    html = BeautifulSoup(raw_html, 'html.parser')
+    for c in html.select('center'):
+        if 'ปิดระบบจองเลข' in c:
+            print('System is unavailable now')
+            droid.notify(c.text, 'System is unavailable now')
+        else:
+            for i, s in zip(c.select('input'), c.select('span')):
+                cartype = i['value'].split()[-1]
+                plateset = s.text
+                if 'รถเก๋ง' in cartype:
+                    print(cartype,  plateset)
+                    droid.notify(cartype, plateset)
+                    break
+
+    
+
+    
     
